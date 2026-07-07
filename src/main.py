@@ -30,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from src.core.config import ConfigManager
 from src.engine.parser import MarkdownParser
 from src.engine.exporter import ExcelExporter
+from src.core.utils.config_loader import load_config_with_migration
+from src.cli.router import convert_file
 
 
 def sanitize_folder_name(name: str) -> str:
@@ -184,7 +186,21 @@ def process_file(input_path: Path, out_dir: Path, out_name: str):
         except Exception as e:
             console.print(f"  [error]✗[/error] [error]Error processing {input_path}: {e}[/error]")
 
-def main():
+def run_convert(args: argparse.Namespace) -> None:
+    try:
+        out = convert_file(args.input, args.format, args.output)
+        console.print(f"  [success]✓[/success] Converted to [path]{out}[/path]")
+    except Exception as e:
+        console.print(Panel(
+            f"[error]{e}[/error]",
+            title="[error]Conversion Error[/error]",
+            border_style="error",
+            expand=False
+        ))
+        sys.exit(1)
+
+
+def _build_legacy_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="MaMoW: Parse Markdown test cases into Excel",
         add_help=False,
@@ -196,13 +212,43 @@ def main():
     parser.add_argument("--merge", action="store_true", help="Merge all .md files in directory into 1 .xlsx file")
     parser.add_argument("--single", dest="single_mode", action="store_true", help="Separate all .md files in directory into multiple .xlsx files")
     parser.add_argument("-h", "--help", action="store_true", help="Show help message and exit")
-    
-    if len(sys.argv) == 1 or "-h" in sys.argv or "--help" in sys.argv:
+    return parser
+
+
+def _build_convert_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="MaMoW: Convert between Gherkin, Markdown, and Excel",
+        add_help=False,
+    )
+    parser.add_argument("-i", "--input", required=True, help="Path to input file")
+    parser.add_argument("-f", "--format", required=True, choices=["md", "gherkin", "feature", "excel"],
+                        help="Target output format")
+    parser.add_argument("-o", "--output", default=None, help="Path to output file")
+    return parser
+
+
+def main():
+    if len(sys.argv) == 1:
         print_banner()
         print_help()
         sys.exit(0)
-        
-    args = parser.parse_args()
+
+    if "-h" in sys.argv or "--help" in sys.argv:
+        if len(sys.argv) >= 2 and sys.argv[1] == "convert":
+            _build_convert_parser().print_help()
+        else:
+            print_banner()
+            print_help()
+        sys.exit(0)
+
+    if len(sys.argv) >= 2 and sys.argv[1] == "convert":
+        convert_parser = _build_convert_parser()
+        args = convert_parser.parse_args(sys.argv[2:])
+        run_convert(args)
+        return
+
+    legacy_parser = _build_legacy_parser()
+    args = legacy_parser.parse_args()
     
     if args.merge and args.single_mode:
         console.print(Panel(
@@ -213,7 +259,7 @@ def main():
         ))
         sys.exit(1)
         
-    config = ConfigManager.load(args.config)
+    config = load_config_with_migration(args.config)
     default_input_dir = getattr(config, 'default_input_dir', 'samples/input')
     default_output_dir = getattr(config, 'default_output_dir', 'samples/output')
     

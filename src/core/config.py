@@ -19,6 +19,19 @@ class AppConfig(BaseModel):
     tcid_format: str
     global_metadata_keys: list[str] = Field(default_factory=list)
     columns: list[ColumnConfig]
+    template_path: str | None = None
+    default_tags: list[str] = Field(default_factory=lambda: ["@regression"])
+    language: str = "id"
+    indentation_spaces: int = 2
+    tag_categories: dict[str, list[str]] = Field(
+        default_factory=lambda: {
+            "smoke": ["@smoke"],
+            "regression": ["@regression"],
+            "sanity": ["@sanity"],
+            "positive": ["@positive"],
+            "negative": ["@negative"],
+        }
+    )
 
 
 class ConfigManager:
@@ -29,9 +42,22 @@ class ConfigManager:
         path = Path(config_path)
         if path.exists():
             with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                cls._config = AppConfig(**data)
-                return cls._config
+                data: dict = json.load(f)
+            if "global" in data or "excel" in data or "gherkin" in data:
+                flat: dict = {}
+                for ns in ("global", "excel", "gherkin"):
+                    if ns in data and isinstance(data[ns], dict):
+                        flat.update(data[ns])
+                data = flat
+            _LEGACY_KEY_MAP = {
+                "gherkin_default_tags": "default_tags",
+                "gherkin_tag_categories": "tag_categories",
+            }
+            for old_key, new_key in _LEGACY_KEY_MAP.items():
+                if old_key in data and new_key not in data:
+                    data[new_key] = data.pop(old_key)
+            cls._config = AppConfig(**data)
+            return cls._config
         raise FileNotFoundError(f"Configuration file not found at {path}")
 
     @classmethod

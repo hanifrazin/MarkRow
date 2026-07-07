@@ -1,31 +1,132 @@
 {
-  "default_input_dir": "samples/input",
-  "default_output_dir": "samples/output",
-  "tcid_format": "TC-{seq:03d}",
-  "global_metadata_keys": [
-    "URL Target",
-    "Modul",
-    "Tanggal Dibuat",
-    "Author",
-    "Tiket Story Dev",
-    "Tiket Test Case",
-    "Platform",
-    "Env",
-    "Username",
-    "Password"
-  ],
-  "columns": [
-    {"id": "tcid", "name": "TC ID", "width": 15, "visible": true, "order": 1},
-    {"id": "tc_type", "name": "TC Type", "width": 12, "visible": true, "order": 2},
-    {"id": "priority", "name": "Priority", "width": 10, "visible": true, "order": 3},
-    {"id": "scenario", "name": "Scenario", "width": 40, "visible": true, "order": 4},
-    {"id": "precondition", "name": "Pre-Condition", "width": 30, "visible": true, "order": 5},
-    {"id": "test_steps", "name": "Test Steps", "width": 50, "visible": true, "order": 6},
-    {"id": "test_data", "name": "Test Data", "width": 20, "visible": true, "order": 7},
-    {"id": "expected_result", "name": "Expected Results", "width": 50, "visible": true, "order": 8},
-    {"id": "actual_results", "name": "Actual Results", "width": 30, "visible": true, "order": 9},
-    {"id": "status", "name": "Status", "width": 15, "visible": true, "order": 10},
-    {"id": "link_evidence", "name": "Link Evidence", "width": 20, "visible": true, "order": 11},
-    {"id": "remarks", "name": "Remarks", "width": 20, "visible": true, "order": 12}
-  ]
+  "global": {
+    "default_input_dir": "samples/input",
+    "default_output_dir": "samples/output",
+    "tcid_format": "TC-{seq:03d}",
+    "global_metadata_keys": [
+      "URL Target",
+      "Modul",
+      "Tanggal Dibuat",
+      "Author",
+      "Tiket Story Dev",
+      "Tiket Test Case",
+      "Platform",
+      "Env",
+      "Username",
+      "Password"
+    ]
+  },
+  "excel": {
+    "columns": [
+      {
+        "id": "tcid",
+        "name": "TC ID",
+        "width": 15,
+        "visible": true,
+        "order": 1
+      },
+      {
+        "id": "tc_type",
+        "name": "TC Type",
+        "width": 12,
+        "visible": true,
+        "order": 2
+      },
+      {
+        "id": "priority",
+        "name": "Priority",
+        "width": 10,
+        "visible": true,
+        "order": 3
+      },
+      {
+        "id": "scenario",
+        "name": "Scenario",
+        "width": 40,
+        "visible": true,
+        "order": 4
+      },
+      {
+        "id": "precondition",
+        "name": "Pre-Condition",
+        "width": 30,
+        "visible": true,
+        "order": 5
+      },
+      {
+        "id": "test_steps",
+        "name": "Test Steps",
+        "width": 50,
+        "visible": true,
+        "order": 6
+      },
+      {
+        "id": "test_data",
+        "name": "Test Data",
+        "width": 20,
+        "visible": true,
+        "order": 7
+      },
+      {
+        "id": "expected_result",
+        "name": "Expected Results",
+        "width": 50,
+        "visible": true,
+        "order": 8
+      },
+      {
+        "id": "actual_results",
+        "name": "Actual Results",
+        "width": 30,
+        "visible": true,
+        "order": 9
+      },
+      {
+        "id": "status",
+        "name": "Status",
+        "width": 15,
+        "visible": true,
+        "order": 10
+      },
+      {
+        "id": "link_evidence",
+        "name": "Link Evidence",
+        "width": 20,
+        "visible": true,
+        "order": 11
+      },
+      {
+        "id": "remarks",
+        "name": "Remarks",
+        "width": 20,
+        "visible": true,
+        "order": 12
+      }
+    ],
+    "template_path": null
+  },
+  "gherkin": {
+    "language": "id",
+    "default_tags": [
+      "@regression"
+    ],
+    "indentation_spaces": 2,
+    "tag_categories": {
+      "smoke": [
+        "@smoke"
+      ],
+      "regression": [
+        "@regression"
+      ],
+      "sanity": [
+        "@sanity"
+      ],
+      "positive": [
+        "@positive"
+      ],
+      "negative": [
+        "@negative"
+      ]
+    }
+  }
 }
