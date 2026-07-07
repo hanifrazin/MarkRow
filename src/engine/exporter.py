@@ -2,11 +2,15 @@ import re
 from pathlib import Path
 
 from openpyxl import Workbook
-from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell
+from openpyxl.cell.rich_text import CellRichText, TextBlock
+from openpyxl.cell.text import InlineFont
+from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
-from src.models.testcase import Module
+from openpyxl.worksheet.worksheet import Worksheet
+
 from src.core.config import ConfigManager
+from src.models.testcase import Module
 
 class ExcelExporter:
     def __init__(self, output_dir: str | Path):
@@ -31,9 +35,6 @@ class ExcelExporter:
         return final_name
 
     def parse_hyperlinks(self, text: str) -> tuple[object, str | None]:
-        from openpyxl.cell.rich_text import CellRichText, TextBlock
-        from openpyxl.cell.text import InlineFont
-
         matches = list(re.finditer(r'\[(.*?)\]\((.*?)\)', text))
         if not matches:
             return text, None
@@ -151,6 +152,9 @@ class ExcelExporter:
         for module, output_filename in modules_with_filenames:
             self.export(module, output_filename)
 
-    def _bold_font(self):
-        from openpyxl.styles import Font
-        return Font(bold=True)
+    _bold_cache: Font | None = None
+
+    def _bold_font(self) -> Font:
+        if self._bold_cache is None:
+            self._bold_cache = Font(bold=True)
+        return self._bold_cache

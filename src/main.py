@@ -8,9 +8,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
 from rich.text import Text
-from rich.align import Align
 from rich.rule import Rule
-from rich.columns import Columns
 
 custom_theme = Theme({
     "primary": "bold cyan1",
@@ -119,23 +117,27 @@ def create_result_subfolder(input_path: Path, base_output_dir: Path) -> Path:
 
 def print_banner():
     banner = Text()
-    banner.append("___  ___  ___  ______ _   ________ _____  _    _ \n", style="primary")
-    banner.append("|  \\/  | / _ \\ | ___ \\ | / /| ___ \\  _  || |  | |\n", style="primary")
-    banner.append("| .  . |/ /_\\ \\| |_/ / |/ / | |_/ / | | || |  | |\n", style="accent")
-    banner.append("| |\\/| ||  _  ||    /|    \\ |    /| | | || |/\\| |\n", style="accent")
-    banner.append("| |  | || | | || |\\ \\| |\\  \\| |\\ \\\\ \\_/ /\\  /\\  /\n", style="success")
-    banner.append("\\_|  |_/\\_| |_/\\_| \\_\\_| \\_/\\_| \\_|\\___/  \\/  \\/ \n", style="success")
-    banner.append("\n\n")
-    banner.append("            ", style="dim")
-    banner.append("Parse", style="primary bold")
-    banner.append(" Markdown ", style="accent bold")
-    banner.append("To ", style="info")
-    banner.append("Row", style="success bold")
+    banner.append(" __  __    _    __  __  _____        __    \n", style="primary")
+    banner.append("|  \\/  |  / \\  |  \\/  |/ _ \\ \\      / /    \n", style="accent")
+    banner.append("| |\\/| | / _ \\ | |\\/| | | | \\ \\ /\\ / /     \n", style="info")
+    banner.append("| |  | |/ ___ \\| |  | | |_| |\\ V  V /      \n", style="success")
+    banner.append("|_|  |_/_/   \\_\\_|  |_|\\___/  \\_/\\_/       \n", style="warning")
+    banner.append("\n")
+    banner.append("    ", style="dim")
+    banner.append("Converter", style="bold white on cyan")
+    banner.append(" ", style="dim")
+    banner.append("Markdown", style="bold white on magenta")
+    banner.append(" ", style="dim")
+    banner.append("To", style="bold white on blue")
+    banner.append(" ", style="dim")
+    banner.append("Many", style="bold black on yellow")
+    banner.append(" ", style="dim")
+    banner.append("Rows", style="bold white on green")
     console.print(Panel.fit(banner, border_style="primary", padding=(1, 2)))
 
 def print_help():
     console.print()
-    console.print(Rule("[primary]MarkRow[/primary] - [dim]CLI Options[/dim]", style="primary"))
+    console.print(Rule("[primary]MaMoW[/primary] - [dim]CLI Options[/dim]", style="primary"))
     console.print()
     
     table = Table(show_header=True, header_style="primary", border_style="dim", pad_edge=False)
@@ -154,9 +156,9 @@ def print_help():
     console.print()
     console.print(Panel(
         "[dim]Examples:[/dim]\n"
-        "  [primary]markrow[/primary] [info]-i[/info] [path]samples/input/test.md[/path] [info]-o[/info] [path]output/test.xlsx[/path]\n"
-        "  [primary]markrow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--merge[/info] [info]-o[/info] [path]output/input.xlsx[/path]\n"
-        "  [primary]markrow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--single[/info] [info]-o[/info] [path]output/[/path]",
+        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/test.md[/path] [info]-o[/info] [path]output/test.xlsx[/path]\n"
+        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--merge[/info] [info]-o[/info] [path]output/input.xlsx[/path]\n"
+        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--single[/info] [info]-o[/info] [path]output/[/path]",
         title="[primary]Usage Examples[/primary]",
         border_style="accent",
         expand=False
@@ -184,7 +186,7 @@ def process_file(input_path: Path, out_dir: Path, out_name: str):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="MarkRow: Parse Markdown test cases into Excel",
+        description="MaMoW: Parse Markdown test cases into Excel",
         add_help=False,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -246,7 +248,7 @@ def main():
         else:
             output_path = create_result_subfolder(input_path, output_path)
 
-    console.print(Rule(f"[primary]MarkRow[/primary] - [dim]Processing[/dim]", style="primary"))
+    console.print(Rule(f"[primary]MaMoW[/primary] - [dim]Processing[/dim]", style="primary"))
     console.print(f"  [info]Input:[/info]  [path]{input_path}[/path]")
     console.print(f"  [info]Output:[/info] [path]{output_path}[/path]")
     if args.merge:

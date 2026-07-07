@@ -2,7 +2,7 @@
 URL Target: https://opensource-demo.orangehrmlive.com/web/index.php/auth/login
 Modul: Authentication / Login
 Tanggal Dibuat: 01 Juli 2026
-Author: Markrow
+Author: MaMoW
 Tiket Story Dev: BSMPD-2694
 Tiket Test Case: BSMPD-2814
 Platform: Web

@@ -7,7 +7,7 @@ cd /d "%PROJECT_ROOT%"
 set "PROJECT_ROOT=%CD%"
 set "SCRIPTS_DIR=%PROJECT_ROOT%\src\executable_scripts"
 
-echo Installing MarkRow to User PATH...
+echo Installing MaMoW to User PATH...
 
 for /f "tokens=2,*" %%A in ('reg query HKCU\Environment /v PATH 2^>nul') do (
     set "USER_PATH=%%B"
@@ -31,5 +31,5 @@ setx PATH "%NEW_PATH%"
 echo Appended %SCRIPTS_DIR% to user PATH.
 
 :End
-echo Installation complete! You can now use the 'markrow' command globally.
+echo Installation complete! You can now use the 'mamow' command globally.
 pause

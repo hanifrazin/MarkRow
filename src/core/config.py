@@ -1,7 +1,9 @@
 import json
 from pathlib import Path
-from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
 
 class ColumnConfig(BaseModel):
     id: str
@@ -10,14 +12,14 @@ class ColumnConfig(BaseModel):
     visible: bool
     order: int
 
-from pydantic import BaseModel, Field
 
 class AppConfig(BaseModel):
     default_input_dir: str
     default_output_dir: str
     tcid_format: str
-    global_metadata_keys: List[str] = Field(default_factory=list)
-    columns: List[ColumnConfig]
+    global_metadata_keys: list[str] = Field(default_factory=list)
+    columns: list[ColumnConfig]
+
 
 class ConfigManager:
     _config: Optional[AppConfig] = None
