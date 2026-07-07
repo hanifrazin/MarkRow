@@ -1,4 +1,5 @@
 import argparse
+import re
 import sys
 from pathlib import Path
 from rich.console import Console
@@ -32,6 +33,90 @@ from src.core.config import ConfigManager
 from src.engine.parser import MarkdownParser
 from src.engine.exporter import ExcelExporter
 
+
+def sanitize_folder_name(name: str) -> str:
+    """
+    Sanitize a folder name for safe filesystem usage.
+
+    - Extracts just the final name component (strips path traversal like ``../``).
+    - Replaces illegal OS characters (``< > : " / \\ | ? *`` and null) with ``_``.
+    - Strips leading/trailing dots and spaces (Windows restriction).
+    - Falls back to ``"default"`` if the result is empty or invalid.
+    """
+    # Extract just the leaf name — inherently removes any path-traversal prefix
+    name = Path(name).name
+
+    # Remove/replace characters illegal in folder names across Windows/Linux/Mac
+    sanitized = re.sub(r'[<>:"/\\|?*\x00]', '_', name)
+
+    # Strip leading/trailing dots and spaces (Windows limitation)
+    sanitized = sanitized.strip('. ')
+
+    # If empty or a special directory entry, use fallback
+    if not sanitized or sanitized in ('.', '..'):
+        return 'default'
+
+    return sanitized
+
+
+def create_result_subfolder(input_path: Path, base_output_dir: Path) -> Path:
+    """
+    If *input_path* is a **directory**, create a ``result_<sanitized_name>``
+    subfolder inside *base_output_dir* and return its path.
+
+    If *input_path* is a **file**, return *base_output_dir* unchanged
+    (no subfolder created).
+
+    Edge cases handled:
+    - Path traversal and illegal characters via :func:`sanitize_folder_name`.
+    - Empty / root directory name (falls back to ``"default"``).
+    - File-vs-directory collision (exits with a rich error Panel).
+    - Permission and OSError (exits with a rich error Panel).
+    """
+    if not input_path.is_dir():
+        return base_output_dir
+
+    folder_name = sanitize_folder_name(input_path.name)
+    result_dir = base_output_dir / f"result_{folder_name}"
+
+    # Collision: exists but is a FILE, not a directory
+    if result_dir.exists() and not result_dir.is_dir():
+        console.print(Panel(
+            f"[error]Cannot create folder '[path]{result_dir}[/path]': "
+            f"a file with the same name already exists.[/error]",
+            title="[error]Error[/error]",
+            border_style="error",
+            expand=False
+        ))
+        sys.exit(1)
+
+    # Try to create the folder
+    try:
+        result_dir.mkdir(parents=True, exist_ok=True)
+        console.print(f"  [info]Created sub-folder:[/info] [path]{result_dir}/[/path]")
+    except PermissionError:
+        console.print(Panel(
+            f"[error]Permission denied: Cannot create folder "
+            f"'[path]{result_dir}[/path]'.[/error]\n"
+            f"[warning]Please check your folder permissions and try again.[/warning]",
+            title="[error]Permission Error[/error]",
+            border_style="error",
+            expand=False
+        ))
+        sys.exit(1)
+    except OSError as e:
+        console.print(Panel(
+            f"[error]Failed to create folder '[path]{result_dir}[/path]': "
+            f"{e}[/error]",
+            title="[error]OS Error[/error]",
+            border_style="error",
+            expand=False
+        ))
+        sys.exit(1)
+
+    return result_dir
+
+
 def print_banner():
     banner = Text()
     banner.append("___  ___  ___  ______ _   ________ _____  _    _ \n", style="primary")
@@ -41,7 +126,11 @@ def print_banner():
     banner.append("| |  | || | | || |\\ \\| |\\  \\| |\\ \\\\ \\_/ /\\  /\\  /\n", style="success")
     banner.append("\\_|  |_/\\_| |_/\\_| \\_\\_| \\_/\\_| \\_|\\___/  \\/  \\/ \n", style="success")
     banner.append("\n\n")
-    banner.append("            Parse Markdown To Row", style="dim")
+    banner.append("            ", style="dim")
+    banner.append("Parse", style="primary bold")
+    banner.append(" Markdown ", style="accent bold")
+    banner.append("To ", style="info")
+    banner.append("Row", style="success bold")
     console.print(Panel.fit(banner, border_style="primary", padding=(1, 2)))
 
 def print_help():
@@ -146,7 +235,17 @@ def main():
             output_path = Path(default_output_dir) / args.output
     else:
         output_path = Path(default_output_dir)
-    
+
+    # ── Auto-create result_<input_folder> subfolder for directory inputs ──
+    if input_path.is_dir():
+        if output_path.suffix == ".xlsx":
+            # --merge with explicit .xlsx path → insert result_ into parent dir
+            base_dir = output_path.parent
+            result_dir = create_result_subfolder(input_path, base_dir)
+            output_path = result_dir / output_path.name
+        else:
+            output_path = create_result_subfolder(input_path, output_path)
+
     console.print(Rule(f"[primary]MarkRow[/primary] - [dim]Processing[/dim]", style="primary"))
     console.print(f"  [info]Input:[/info]  [path]{input_path}[/path]")
     console.print(f"  [info]Output:[/info] [path]{output_path}[/path]")
@@ -199,10 +298,10 @@ def main():
                 
             if output_path.suffix == ".xlsx":
                 out_dir = output_path.parent
-                out_name = output_path.name
+                out_name = output_path.stem + "_merge.xlsx"
             else:
                 out_dir = output_path
-                out_name = input_path.name + ".xlsx"
+                out_name = input_path.name + "_merge.xlsx"
                 
             console.print(f"[info]Found [primary]{len(md_files)}[/primary] Markdown files. Merging into [path]{out_dir / out_name}[/path]...[/info]")
             console.print()
@@ -278,11 +377,11 @@ def main():
                         module = md_parser.parse()
                         
                         base_stem = md_file.stem
-                        out_name = f"{base_stem}.xlsx"
+                        out_name = f"{base_stem}_single.xlsx"
                         counter = 1
                         
                         while (out_dir / out_name).exists() or out_name in used_out_names:
-                            out_name = f"{base_stem}_{counter}.xlsx"
+                            out_name = f"{base_stem}_single_{counter}.xlsx"
                             counter += 1
                             
                         used_out_names.add(out_name)

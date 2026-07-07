@@ -51,39 +51,100 @@ The MarkRow CLI provides a straightforward way to process Markdown files. You ca
 **Using the `markrow` executable (Recommended):**
 
 ```bash
-markrow -i <input_path> [-o <output_path>] [-c <config_path>]
+markrow -i <input_path> [-o <output_path>] [-c <config_path>] [--merge | --single]
 ```
 
 **Using Python:**
 
 ```bash
-python src/main.py -i <input_path> [-o <output_path>] [-c <config_path>]
+python src/main.py -i <input_path> [-o <output_path>] [-c <config_path>] [--merge | --single]
 ```
 
 ### Arguments:
 
-- `-i`, `--input` **(Required)**: Path to a specific Markdown file (`.md`) or a directory containing Markdown files.
-- `-o`, `--output` *(Optional)*: Path to the output Excel file (`.xlsx`) or directory. If omitted, files will be saved to the default output directory configured in `config.json`.
-- `-c`, `--config` *(Optional)*: Path to the configuration file (defaults to `config.json`).
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-i`, `--input` **(Required)** | Path to input Markdown file (`.md`) or a directory containing `.md` files | — |
+| `-o`, `--output` | Path to output Excel file (`.xlsx`) or directory | Value from `config.json` |
+| `-c`, `--config` | Path to configuration file | `config.json` |
+| `--merge` | Merge **all** `.md` files in a directory into a **single** `.xlsx` file | off |
+| `--single` | Export **each** `.md` file in a directory to **separate** `.xlsx` files | off |
+| `-h`, `--help` | Show help message with all options and examples | — |
+
+### Processing Modes
+
+When the input is a **directory**, MarkRow supports three modes:
+
+| Mode | Flag | Behavior |
+|------|------|----------|
+| **Batch** *(default)* | *(no flag)* | Processes each `.md` file individually → separate `.xlsx` files |
+| **Merge** | `--merge` | Combines all `.md` files into one `.xlsx` file |
+| **Single** | `--single` | Exports each `.md` file to its own `.xlsx` file with conflict-safe naming |
+
+> **Note:** `--merge` and `--single` cannot be used together. If the input is a single file, both flags are ignored.
+
+### Output Naming Convention
+
+When the output path is a **directory**, MarkRow auto-generates filenames as follows:
+
+| Mode | Output Filename Pattern | Example |
+|------|------------------------|---------|
+| **Single file** | `{filename}.xlsx` | `login.xlsx` |
+| **Batch** *(directory)* | `{filename}.xlsx` per file | `login.xlsx`, `register.xlsx` |
+| **Merge** *(directory)* | `{input_folder}_merge.xlsx` | `data_merge.xlsx` |
+| **Single** *(directory)* | `{filename}_single.xlsx` (appends `_1`, `_2`, … on conflict) | `login_single.xlsx` |
+
+### Auto-created Result Subfolder
+
+When the input is a **directory**, MarkRow automatically creates a `result_<input_folder_name>` subfolder inside the output directory to keep your exports organized. For example:
+
+```bash
+markrow -i samples/data/ -o samples/output/ --merge
+```
+→ Exports to `samples/output/result_data/data_merge.xlsx`
+
+This prevents output clutter and keeps results from different input directories separated.
 
 ### Examples:
 
 **1. Process a single Markdown file:**
 
 ```bash
-markrow -i samples/input/login.md -o samples/output/login_test_cases.xlsx
+markrow -i samples/data/login.md -o samples/output/login.xlsx
 ```
 
-**2. Process all Markdown files in a directory:**
+**2. Batch process all files in a directory (default mode):**
 
 ```bash
-markrow -i samples/input/ -o samples/output/
+markrow -i samples/data/ -o samples/output/
 ```
+→ Each `.md` file becomes its own `.xlsx` inside `samples/output/result_data/`
 
-**3. Run using fallback default paths (as defined in config.json):**
+**3. Merge all files in a directory into a single Excel workbook:**
+
+```bash
+markrow -i samples/data/ -o samples/output/data.xlsx --merge
+```
+→ All test cases combined into `samples/output/result_data/data_merge.xlsx`
+
+**4. Export each file separately using `--single` mode:**
+
+```bash
+markrow -i samples/data/ -o samples/output/ --single
+```
+→ Each `.md` → separate .xlsx (e.g., `login_single.xlsx`, `login-2_single.xlsx`) inside `samples/output/result_data/`
+
+**5. Run using fallback default paths (as defined in `config.json`):**
 
 ```bash
 markrow -i login.md
+```
+→ Looks for `samples/input/login.md` and outputs to `samples/output/`
+
+**6. View the help menu:**
+
+```bash
+markrow -h
 ```
 
 ## 🛠 Troubleshooting

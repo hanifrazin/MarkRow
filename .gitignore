@@ -39,3 +39,4 @@ Thumbs.db
 .coverage
 htmlcov/
 .tox/
+skills/**
