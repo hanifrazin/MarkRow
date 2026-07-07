@@ -15,14 +15,16 @@ class ExcelExporter:
         self.config = ConfigManager.get()
 
     def sanitize_sheet_name(self, name: str, existing_names: list[str]) -> str:
-        # Max 28 chars, replace \ / * ? : [ ] with _
+        # Max 31 chars, replace \ / * ? : [ ] with _
         clean_name = re.sub(r'[\\/\*\?\:\[\]]', '_', name)
-        clean_name = clean_name[:28]
         
-        final_name = clean_name
+        final_name = clean_name[:31]
         counter = 1
+        
         while final_name in existing_names:
-            final_name = f"{clean_name[:26]}_{counter}"
+            suffix = f"_{counter:03d}"
+            # Reserve 4 characters for suffix (_XXX), max base length is 27
+            final_name = f"{clean_name[:27]}{suffix}"
             counter += 1
             
         existing_names.append(final_name)
@@ -57,12 +59,7 @@ class ExcelExporter:
             
         return CellRichText(*elements), first_url
 
-    def export(self, module: Module, output_filename: str):
-        wb = Workbook()
-        ws = wb.active
-        assert isinstance(ws, Worksheet)
-        
-        sheet_name = self.sanitize_sheet_name(module.name, [])
+    def _render_module_to_sheet(self, ws: Worksheet, module: Module, sheet_name: str):
         ws.title = sheet_name
         
         # Render Global Metadata
@@ -119,10 +116,41 @@ class ExcelExporter:
                     cell.hyperlink = url  # type: ignore
                     
             row_idx += 1
+
+    def export(self, module: Module, output_filename: str, sheet_name: str = None):
+        wb = Workbook()
+        ws = wb.active
+        assert isinstance(ws, Worksheet)
+        
+        final_sheet_name = self.sanitize_sheet_name(sheet_name or module.name, [])
+        self._render_module_to_sheet(ws, module, final_sheet_name)
+        
+        output_path = self.output_dir / output_filename
+        wb.save(output_path)
+
+    def export_batch(self, modules_with_names: list[tuple[Module, str]], output_filename: str):
+        """Export multiple modules into a single Excel file with multiple sheets."""
+        wb = Workbook()
+        existing_names = []
+        
+        for i, (module, desired_sheet_name) in enumerate(modules_with_names):
+            if i == 0:
+                ws = wb.active
+                assert isinstance(ws, Worksheet)
+            else:
+                ws = wb.create_sheet()
+                
+            final_sheet_name = self.sanitize_sheet_name(desired_sheet_name, existing_names)
+            self._render_module_to_sheet(ws, module, final_sheet_name)
             
         output_path = self.output_dir / output_filename
         wb.save(output_path)
-        
+
+    def export_multiple(self, modules_with_filenames: list[tuple[Module, str]]):
+        """Export multiple modules into multiple separate Excel files."""
+        for module, output_filename in modules_with_filenames:
+            self.export(module, output_filename)
+
     def _bold_font(self):
         from openpyxl.styles import Font
         return Font(bold=True)
