@@ -7,7 +7,7 @@ cd /d "%PROJECT_ROOT%"
 set "PROJECT_ROOT=%CD%"
 set "SCRIPTS_DIR=%PROJECT_ROOT%\src\executable_scripts"
 
-echo Installing MaMoW to User PATH...
+echo Installing MAMOW to User PATH...
 
 for /f "tokens=2,*" %%A in ('reg query HKCU\Environment /v PATH 2^>nul') do (
     set "USER_PATH=%%B"

@@ -185,7 +185,8 @@ class TestMarkdownWriter:
         output = MarkdownWriter.render(feature)
         assert "# Module: Login" in output
         assert "## Scenario: Valid login" in output
-        assert "**Tags**: @smoke" in output
+        assert "**Test Type**: smoke" in output
+        assert "**TC Type**: Positive" in output
         assert "**Precondition**:" in output
         assert "**Test Steps**:" in output
         assert "**Expected Result**:" in output
@@ -247,15 +248,18 @@ class TestRoundTrip:
 class TestTagClassifier:
     def test_classify_tags(self):
         from src.core.utils.tag_classifier import classify_tag, classify_tags
-        assert classify_tag("@smoke") == "smoke"
-        assert classify_tag("@regression") == "regression"
+        assert classify_tag("@smoke") == "test_type"
+        assert classify_tag("@regression") == "test_type"
         assert classify_tag("@p1") == "priority"
-        assert classify_tag("@unknown") == "uncategorized"
+        assert classify_tag("@positive") == "tc_type"
+        assert classify_tag("@negative") == "tc_type"
+        assert classify_tag("@ui") == "platform_type"
+        assert classify_tag("@custom") == "other_tags"
 
         result = classify_tags(["@smoke", "@p2", "@custom"])
-        assert "smoke" in result
+        assert "test_type" in result
         assert "priority" in result
-        assert "uncategorized" in result
+        assert "other_tags" in result
 
 
 class TestConfigLoader:

@@ -1,18 +1,15 @@
 from typing import Literal
 
 CategoryName = Literal[
-    "smoke", "regression", "sanity", "positive", "negative",
-    "priority", "module", "uncategorized",
+    "priority", "tc_type", "test_type", "platform_type", "other_tags"
 ]
 
 _DEFAULT_CATEGORIES: dict[CategoryName, list[str]] = {
-    "smoke": ["@smoke"],
-    "regression": ["@regression"],
-    "sanity": ["@sanity"],
-    "positive": ["@positive"],
-    "negative": ["@negative"],
     "priority": ["@p0", "@p1", "@p2", "@p3", "@p4", "@p5"],
-    "module": [],
+    "tc_type": ["@positive", "@negative"],
+    "test_type": ["@smoke", "@regression", "@sanity", "@integration"],
+    "platform_type": ["@ui", "@mobile", "@api", "@web", "@desktop"],
+    "other_tags": [],
 }
 
 
@@ -32,7 +29,7 @@ def classify_tag(tag: str, custom_map: dict[str, list[str]] | None = None) -> Ca
     if tag_lower.startswith("@p") and len(tag_lower) <= 4:
         return "priority"
 
-    return "uncategorized"
+    return "other_tags"
 
 
 def classify_tags(tags: list[str], custom_map: dict[str, list[str]] | None = None) -> dict[str, list[str]]:

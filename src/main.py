@@ -119,27 +119,78 @@ def create_result_subfolder(input_path: Path, base_output_dir: Path) -> Path:
 
 def print_banner():
     banner = Text()
-    banner.append(" __  __    _    __  __  _____        __    \n", style="primary")
-    banner.append("|  \\/  |  / \\  |  \\/  |/ _ \\ \\      / /    \n", style="accent")
-    banner.append("| |\\/| | / _ \\ | |\\/| | | | \\ \\ /\\ / /     \n", style="info")
-    banner.append("| |  | |/ ___ \\| |  | | |_| |\\ V  V /      \n", style="success")
-    banner.append("|_|  |_/_/   \\_\\_|  |_|\\___/  \\_/\\_/       \n", style="warning")
+    banner.append("      __  __    _    __  __  _____        __      \n", style="primary")
+    banner.append("     |  \\/  |  / \\  |  \\/  |/ _ \\ \\      / /     \n", style="accent")
+    banner.append("     | |\\/| | / _ \\ | |\\/| | | | \\ \\ /\\ / /      \n", style="info")
+    banner.append("     | |  | |/ ___ \\| |  | | |_| |\\ V  V /       \n", style="success")
+    banner.append("     |_|  |_/_/   \\_\\_|  |_|\\___/  \\_/\\_/        \n", style="warning")
     banner.append("\n")
-    banner.append("    ", style="dim")
-    banner.append("Converter", style="bold white on cyan")
+    banner.append("              ", style="dim")
+    banner.append("Markdown", style="bold magenta")
     banner.append(" ", style="dim")
-    banner.append("Markdown", style="bold white on magenta")
+    banner.append("To", style="bold blue")
     banner.append(" ", style="dim")
-    banner.append("To", style="bold white on blue")
-    banner.append(" ", style="dim")
-    banner.append("Many", style="bold black on yellow")
-    banner.append(" ", style="dim")
-    banner.append("Rows", style="bold white on green")
+    banner.append("M", style="bold yellow")
+    banner.append("-", style="dim")
+    banner.append("Rows", style="bold green")
     console.print(Panel.fit(banner, border_style="primary", padding=(1, 2)))
 
-def print_help():
+def print_main_help():
+    """Print main help with overview of all commands."""
     console.print()
-    console.print(Rule("[primary]MaMoW[/primary] - [dim]CLI Options[/dim]", style="primary"))
+    console.print(Rule("[primary]MAMOW[/primary] - [dim]Command Overview[/dim]", style="primary"))
+    console.print()
+    
+    console.print("[info]MAMOW[/info] is a multi-format test case converter with three main modes:")
+    console.print()
+    
+    # Command overview table
+    table = Table(show_header=True, header_style="primary", border_style="dim", pad_edge=False)
+    table.add_column("Command", style="accent", no_wrap=True)
+    table.add_column("Description", style="info")
+    table.add_column("Quick Example", style="dim")
+    
+    table.add_row(
+        "[primary]mamow[/primary] [info]-i[/info] INPUT",
+        "Markdown → Excel conversion (legacy mode)",
+        "mamow -i test.md -o output.xlsx"
+    )
+    table.add_row(
+        "[primary]mamow convert[/primary] [info]-i[/info] INPUT [info]-f[/info] FORMAT",
+        "Convert between formats (Gherkin ↔ Markdown ↔ Excel)",
+        "mamow convert -i test.md -f gherkin"
+    )
+    
+    console.print(table)
+    console.print()
+    
+    # Quick help for each mode
+    console.print(Panel(
+        "[primary]1. Markdown → Excel (Legacy Mode)[/primary]\n"
+        "  For converting Markdown test cases to Excel spreadsheets\n"
+        "  [dim]Usage:[/dim] [primary]mamow[/primary] [info]-i[/info] INPUT [info]-o[/info] OUTPUT [info][OPTIONS][/info]\n"
+        "  [dim]More help:[/dim] [primary]mamow --help[/primary]\n\n"
+        
+        "[primary]2. Format Conversion (Convert Mode)[/primary]\n"
+        "  For converting between Gherkin, Markdown, and Excel formats\n"
+        "  [dim]Usage:[/dim] [primary]mamow convert[/primary] [info]-i[/info] INPUT [info]-f[/info] {md|gherkin|feature|excel} [info]-o[/info] OUTPUT\n"
+        "  [dim]More help:[/dim] [primary]mamow convert --help[/primary]\n\n"
+        
+        "[primary]3. Get Specific Help[/primary]\n"
+        "  [dim]•[/dim] [primary]mamow --help[/primary] - Markdown to Excel help\n"
+        "  [dim]•[/dim] [primary]mamow convert --help[/primary] - Format conversion help",
+        title="[primary]Usage Modes[/primary]",
+        border_style="accent",
+        expand=False
+    ))
+
+def print_md_to_excel_help():
+    """Print help for Markdown to Excel conversion."""
+    console.print()
+    console.print(Rule("[primary]MAMOW[/primary] - [dim]Markdown → Excel Conversion[/dim]", style="primary"))
+    console.print()
+    
+    console.print("[info]Convert Markdown test cases to Excel spreadsheets[/info]")
     console.print()
     
     table = Table(show_header=True, header_style="primary", border_style="dim", pad_edge=False)
@@ -156,11 +207,76 @@ def print_help():
     
     console.print(table)
     console.print()
+    
     console.print(Panel(
         "[dim]Examples:[/dim]\n"
-        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/test.md[/path] [info]-o[/info] [path]output/test.xlsx[/path]\n"
-        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--merge[/info] [info]-o[/info] [path]output/input.xlsx[/path]\n"
-        "  [primary]mamow[/primary] [info]-i[/info] [path]samples/input/[/path] [info]--single[/info] [info]-o[/info] [path]output/[/path]",
+        "  [primary]Convert single file[/primary]\n"
+        "    mamow -i samples/input/test.md -o output/test.xlsx\n\n"
+        "  [primary]Merge directory[/primary]\n"
+        "    mamow -i samples/input/ --merge -o output/merged.xlsx\n\n"
+        "  [primary]Process directory (individual files)[/primary]\n"
+        "    mamow -i samples/input/ -o output/\n\n"
+        "  [primary]Single file mode[/primary]\n"
+        "    mamow -i samples/input/ --single -o output/",
+        title="[primary]Usage Examples[/primary]",
+        border_style="accent",
+        expand=False
+    ))
+    
+    console.print()
+    console.print("[dim]Note:[/dim] Use [primary]mamow convert[/primary] for Gherkin ↔ Markdown conversions")
+
+def print_convert_help():
+    """Print help for format conversion."""
+    console.print()
+    console.print(Rule("[primary]MAMOW[/primary] - [dim]Format Conversion[/dim]", style="primary"))
+    console.print()
+    
+    console.print("[info]Convert between Gherkin, Markdown, and Excel formats[/info]")
+    console.print()
+    
+    table = Table(show_header=True, header_style="primary", border_style="dim", pad_edge=False)
+    table.add_column("Option", style="accent", no_wrap=True)
+    table.add_column("Description", style="info")
+    table.add_column("Default", style="dim")
+    
+    table.add_row("-i, --input", "Path to input file", "[required]")
+    table.add_row("-f, --format", "Target output format: md, gherkin, feature, excel", "[required]")
+    table.add_row("-o, --output", "Path to output file (default: auto-generated)", "auto")
+    table.add_row("-h, --help", "Show this help message and exit", "")
+    
+    console.print(table)
+    console.print()
+    
+    # Format conversion matrix
+    console.print(Panel(
+        "[primary]Supported Conversions:[/primary]\n"
+        "  [dim]•[/dim] [info]Markdown → Gherkin[/info]   (md → .feature)\n"
+        "  [dim]•[/dim] [info]Gherkin → Markdown[/info]   (.feature → md)\n"
+        "  [dim]•[/dim] [info]Markdown → Excel[/info]      (md → .xlsx)\n"
+        "  [dim]•[/dim] [info]Gherkin → Excel[/info]       (.feature → .xlsx)\n\n"
+        
+        "[primary]Format Details:[/primary]\n"
+        "  [dim]•[/dim] [info]md[/info]        - Markdown file (.md)\n"
+        "  [dim]•[/dim] [info]gherkin[/info]  - Gherkin/Feature file (.feature)\n"
+        "  [dim]•[/dim] [info]feature[/info]   - Alias for gherkin\n"
+        "  [dim]•[/dim] [info]excel[/info]     - Excel spreadsheet (.xlsx)",
+        title="[primary]Conversion Matrix[/primary]",
+        border_style="accent",
+        expand=False
+    ))
+    
+    console.print()
+    console.print(Panel(
+        "[dim]Examples:[/dim]\n"
+        "  [primary]Markdown → Gherkin[/primary]\n"
+        "    mamow convert -i test.md -f gherkin -o test.feature\n\n"
+        "  [primary]Gherkin → Markdown[/primary]\n"
+        "    mamow convert -i test.feature -f md -o test.md\n\n"
+        "  [primary]Markdown → Excel[/primary]\n"
+        "    mamow convert -i test.md -f excel -o test.xlsx\n\n"
+        "  [primary]Auto output naming[/primary]\n"
+        "    mamow convert -i input.feature -f md",
         title="[primary]Usage Examples[/primary]",
         border_style="accent",
         expand=False
@@ -202,7 +318,7 @@ def run_convert(args: argparse.Namespace) -> None:
 
 def _build_legacy_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="MaMoW: Parse Markdown test cases into Excel",
+        description="MAMOW: Parse Markdown test cases into Excel",
         add_help=False,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -217,7 +333,7 @@ def _build_legacy_parser() -> argparse.ArgumentParser:
 
 def _build_convert_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="MaMoW: Convert between Gherkin, Markdown, and Excel",
+        description="MAMOW: Convert between Gherkin, Markdown, and Excel",
         add_help=False,
     )
     parser.add_argument("-i", "--input", required=True, help="Path to input file")
@@ -230,15 +346,16 @@ def _build_convert_parser() -> argparse.ArgumentParser:
 def main():
     if len(sys.argv) == 1:
         print_banner()
-        print_help()
+        print_main_help()
         sys.exit(0)
 
     if "-h" in sys.argv or "--help" in sys.argv:
         if len(sys.argv) >= 2 and sys.argv[1] == "convert":
-            _build_convert_parser().print_help()
+            print_banner()
+            print_convert_help()
         else:
             print_banner()
-            print_help()
+            print_md_to_excel_help()
         sys.exit(0)
 
     if len(sys.argv) >= 2 and sys.argv[1] == "convert":
@@ -294,7 +411,7 @@ def main():
         else:
             output_path = create_result_subfolder(input_path, output_path)
 
-    console.print(Rule(f"[primary]MaMoW[/primary] - [dim]Processing[/dim]", style="primary"))
+    console.print(Rule(f"[primary]MAMOW[/primary] - [dim]Processing[/dim]", style="primary"))
     console.print(f"  [info]Input:[/info]  [path]{input_path}[/path]")
     console.print(f"  [info]Output:[/info] [path]{output_path}[/path]")
     if args.merge:

@@ -1,6 +1,27 @@
-### <img src="logo_transparent.png" width="35" align="center" alt="MaMoW Icon" />  MaMoW
+###   MAMOW
 
-MaMoW is a CLI tool designed to parse Markdown test cases into structured Excel files. This utility streamlines the process for QA engineers to convert human-readable test case specifications into standardized spreadsheet formats.
+**Markdown To M-Rows**
+
+MAMOW is a multi-format CLI tool for converting test cases between Markdown, Gherkin, and Excel formats. Designed for QA engineers and test automation developers, it streamlines the process of converting human-readable test specifications into structured formats with automatic tag classification.
+
+**Key Features:**
+
+- 🔄 **Multi-format conversion**: Gherkin ↔ Markdown ↔ Excel
+- 🏷️ **Automatic tag classification**: 5 standardized metadata categories
+- 📁 **Directory processing**: Batch, merge, and single file modes
+- 🎨 **Beautiful CLI**: Colorful interface with progress indicators
+- 📋 **Hierarchical help**: Context-aware help system
+
+## 📑 Quick Navigation
+
+- [🚀 Getting Started](#-getting-started) - Installation & setup
+- [📖 How to Use](#-how-to-use) - CLI usage overview
+- [🎯 Getting Help](#-getting-help) - Hierarchical help system
+- [📝 Legacy Mode](#-legacy-mode-markdown--excel) - Markdown → Excel conversion
+- [🔄 Convert Mode](#-convert-mode-multi-format-conversion) - Multi-format conversion
+- [📋 Examples](#-examples) - Practical usage examples
+- [🏷️ Tag Classification](#️-tag-classification--gherkin-support) - Automatic tag handling
+- [🛠 Troubleshooting](#-troubleshooting) - Common issues & solutions
 
 ## 📋 Prerequisites
 
@@ -17,18 +38,18 @@ Before you begin, ensure you have the following installed on your system:
 Clone the project from the very beginning using the following command:
 
 ```bash
-git clone https://github.com/hanifrazin/MaMoW.git
-cd MaMoW
+git clone https://github.com/hanifrazin/MAMOW.git
+cd MAMOW
 ```
 
 ### 2. Install the CLI Command
 
-MaMoW provides two ways to run the tool:
+MAMOW provides two ways to run the tool:
 
-| Method | Command | Best for |
-|--------|---------|---------|
-| **Global CLI** (recommended) | `mamow -i <input>` | After installation, use from anywhere |
-| **Direct Python** | `python src/main.py -i <input>` | Quick testing, no install needed |
+| Method                             | Command                           | Best for                              |
+| ---------------------------------- | --------------------------------- | ------------------------------------- |
+| **Global CLI** (recommended) | `mamow -i <input>`              | After installation, use from anywhere |
+| **Direct Python**            | `python src/main.py -i <input>` | Quick testing, no install needed      |
 
 The installation scripts below make the `mamow` command available globally. They handle everything — including virtual environment creation and dependency installation — automatically on the first run.
 
@@ -73,21 +94,49 @@ After installation, **restart your terminal** for the PATH changes to take effec
 ---
 
 > **💡 First-run behavior:** When you run `mamow` for the first time (on any platform), it will automatically:
+>
 > 1. Create a Python virtual environment (`.venv/`) in the project root
 > 2. Install all required dependencies (`pydantic`, `openpyxl`, `rich`)
 > 3. Execute your command — no manual `pip install` needed
 
 ## 📖 How to Use
 
-The MaMoW CLI provides a straightforward way to process Markdown files. You can run the CLI natively using the `mamow` command, or via the Python entry script `src/main.py`.
+MAMOW is a multi-format test case converter with two main operation modes:
 
-**Using the `mamow` executable (Recommended):**
+### **1. Legacy Mode: Markdown → Excel Conversion**
+
+For converting Markdown test cases to Excel spreadsheets with advanced directory processing.
+
+### **2. Convert Mode: Multi-Format Conversion**
+
+For converting between Gherkin, Markdown, and Excel formats with automatic tag classification.
+
+## 🎯 Getting Help
+
+MAMOW features a hierarchical help system to make it easy to find the right information:
+
+```bash
+# Show main overview with all commands
+mamow
+
+# Show help for Markdown → Excel conversion
+mamow --help
+
+# Show help for format conversion (Gherkin ↔ Markdown ↔ Excel)
+mamow convert --help
+```
+
+## 📝 Legacy Mode: Markdown → Excel
+
+Convert Markdown test cases to Excel spreadsheets with directory processing capabilities.
+
+**Basic Usage:**
 
 ```bash
 mamow -i <input_path> [-o <output_path>] [-c <config_path>] [--merge | --single]
 ```
 
-**Using Python:**
+**Using Python directly:**
 
 ```bash
 python src/main.py -i <input_path> [-o <output_path>] [-c <config_path>] [--merge | --single]
@@ -95,50 +144,80 @@ python src/main.py -i <input_path> [-o <output_path>] [-c <config_path>] [--merg
 
 ### Arguments:
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-i`, `--input` **(Required)** | Path to input Markdown file (`.md`) or a directory containing `.md` files | — |
-| `-o`, `--output` | Path to output Excel file (`.xlsx`) or directory | Value from `config.json` |
-| `-c`, `--config` | Path to configuration file | `config.json` |
-| `--merge` | Merge **all** `.md` files in a directory into a **single** `.xlsx` file | off |
-| `--single` | Export **each** `.md` file in a directory to **separate** `.xlsx` files | off |
-| `-h`, `--help` | Show help message with all options and examples | — |
+| Option                                   | Description                                                                            | Default                   |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------- |
+| `-i`, `--input` **(Required)** | Path to input Markdown file (`.md`) or a directory containing `.md` files          | —                        |
+| `-o`, `--output`                     | Path to output Excel file (`.xlsx`) or directory                                     | Value from`config.json` |
+| `-c`, `--config`                     | Path to configuration file                                                             | `config.json`           |
+| `--merge`                              | Merge**all** `.md` files in a directory into a **single** `.xlsx` file | off                       |
+| `--single`                             | Export**each** `.md` file in a directory to **separate** `.xlsx` files | off                       |
+| `-h`, `--help`                       | Show help message with all options and examples                                        | —                        |
 
-### Processing Modes
+## 🔄 Convert Mode: Multi-Format Conversion
 
-When the input is a **directory**, MaMoW supports three modes:
+Convert between Gherkin, Markdown, and Excel formats with automatic tag classification.
 
-| Mode | Flag | Behavior |
-|------|------|----------|
-| **Batch** *(default)* | *(no flag)* | Processes each `.md` file individually → separate `.xlsx` files |
-| **Merge** | `--merge` | Combines all `.md` files into one `.xlsx` file |
-| **Single** | `--single` | Exports each `.md` file to its own `.xlsx` file with conflict-safe naming |
+**Basic Usage:**
+
+```bash
+mamow convert -i <input_file> -f <format> [-o <output_file>]
+```
+
+**Format Options:**
+
+- `md` - Markdown file (`.md`)
+- `gherkin` - Gherkin/Feature file (`.feature`)
+- `feature` - Alias for `gherkin`
+- `excel` - Excel spreadsheet (`.xlsx`)
+
+### Automatic Tag Classification
+
+When converting between Gherkin and Markdown, MAMOW automatically classifies tags into 5 standardized metadata blocks:
+
+1. **Priority** - Uppercase, comma-separated (e.g., `P1, P2`)
+2. **TC Type** - Capitalized (e.g., `Positive, Negative`)
+3. **Test Type** - Lowercase (e.g., `smoke, regression`)
+4. **Platform Type** - Uppercase, comma-separated (e.g., `UI, MOBILE`)
+5. **Other Tags** - Lowercase, comma-separated (e.g., `login, bug-123`)
+
+### Processing Modes (Legacy Mode Only)
+
+When the input is a **directory** in Legacy Mode, MAMOW supports three modes:
+
+| Mode                          | Flag          | Behavior                                                                     |
+| ----------------------------- | ------------- | ---------------------------------------------------------------------------- |
+| **Batch** *(default)* | *(no flag)* | Processes each`.md` file individually → separate `.xlsx` files          |
+| **Merge**               | `--merge`   | Combines all`.md` files into one `.xlsx` file                            |
+| **Single**              | `--single`  | Exports each`.md` file to its own `.xlsx` file with conflict-safe naming |
 
 > **Note:** `--merge` and `--single` cannot be used together. If the input is a single file, both flags are ignored.
 
 ### Output Naming Convention
 
-When the output path is a **directory**, MaMoW auto-generates filenames as follows:
+When the output path is a **directory**, MAMOW auto-generates filenames as follows:
 
-| Mode | Output Filename Pattern | Example |
-|------|------------------------|---------|
-| **Single file** | `{filename}.xlsx` | `login.xlsx` |
-| **Batch** *(directory)* | `{filename}.xlsx` per file | `login.xlsx`, `register.xlsx` |
-| **Merge** *(directory)* | `{input_folder}_merge.xlsx` | `data_merge.xlsx` |
-| **Single** *(directory)* | `{filename}_single.xlsx` (appends `_1`, `_2`, … on conflict) | `login_single.xlsx` |
+| Mode                             | Output Filename Pattern                                             | Example                           |
+| -------------------------------- | ------------------------------------------------------------------- | --------------------------------- |
+| **Single file**            | `{filename}.xlsx`                                                 | `login.xlsx`                    |
+| **Batch** *(directory)*  | `{filename}.xlsx` per file                                        | `login.xlsx`, `register.xlsx` |
+| **Merge** *(directory)*  | `{input_folder}_merge.xlsx`                                       | `data_merge.xlsx`               |
+| **Single** *(directory)* | `{filename}_single.xlsx` (appends `_1`, `_2`, … on conflict) | `login_single.xlsx`             |
 
 ### Auto-created Result Subfolder
 
-When the input is a **directory**, MaMoW automatically creates a `result_<input_folder_name>` subfolder inside the output directory to keep your exports organized. For example:
+When the input is a **directory**, MAMOW automatically creates a `result_<input_folder_name>` subfolder inside the output directory to keep your exports organized. For example:
 
 ```bash
 mamow -i samples/data/ -o samples/output/ --merge
 ```
+
 → Exports to `samples/output/result_data/data_merge.xlsx`
 
 This prevents output clutter and keeps results from different input directories separated.
 
-### Examples:
+## 📋 Examples
+
+### Legacy Mode Examples (Markdown → Excel)
 
 **1. Process a single Markdown file:**
 
@@ -151,6 +230,7 @@ mamow -i samples/data/login.md -o samples/output/login.xlsx
 ```bash
 mamow -i samples/data/ -o samples/output/
 ```
+
 → Each `.md` file becomes its own `.xlsx` inside `samples/output/result_data/`
 
 **3. Merge all files in a directory into a single Excel workbook:**
@@ -158,6 +238,7 @@ mamow -i samples/data/ -o samples/output/
 ```bash
 mamow -i samples/data/ -o samples/output/data.xlsx --merge
 ```
+
 → All test cases combined into `samples/output/result_data/data_merge.xlsx`
 
 **4. Export each file separately using `--single` mode:**
@@ -165,6 +246,7 @@ mamow -i samples/data/ -o samples/output/data.xlsx --merge
 ```bash
 mamow -i samples/data/ -o samples/output/ --single
 ```
+
 → Each `.md` → separate .xlsx (e.g., `login_single.xlsx`, `login-2_single.xlsx`) inside `samples/output/result_data/`
 
 **5. Run using fallback default paths (as defined in `config.json`):**
@@ -172,12 +254,123 @@ mamow -i samples/data/ -o samples/output/ --single
 ```bash
 mamow -i login.md
 ```
+
 → Looks for `samples/input/login.md` and outputs to `samples/output/`
 
-**6. View the help menu:**
+### Convert Mode Examples (Multi-Format)
+
+**1. Markdown → Gherkin with tag classification:**
 
 ```bash
-mamow -h
+mamow convert -i test.md -f gherkin -o test.feature
+```
+
+→ Converts Markdown to Gherkin with tags automatically classified
+
+**2. Gherkin → Markdown:**
+
+```bash
+mamow convert -i test.feature -f md -o test.md
+```
+
+→ Converts Gherkin to Markdown with proper tag formatting
+
+**3. Markdown → Excel (via convert mode):**
+
+```bash
+mamow convert -i test.md -f excel -o test.xlsx
+```
+
+**4. Gherkin → Excel:**
+
+```bash
+mamow convert -i test.feature -f excel -o test.xlsx
+```
+
+**5. Auto-generated output naming:**
+
+```bash
+mamow convert -i input.feature -f md
+```
+
+→ Creates `input.md` in the same directory
+
+## 🎨 CLI Interface
+
+MAMOW features a beautiful, colorful CLI interface:
+
+```bash
+╭──────────────────────────────────────────────────────╮
+│                                                      │
+│        __  __    _    __  __  _____        __        │
+│       |  \/  |  / \  |  \/  |/ _ \ \      / /        │
+│       | |\/| | / _ \ | |\/| | | | \ \ /\ / /         │
+│       | |  | |/ ___ \| |  | | |_| |\ V  V /          │
+│       |_|  |_/_/   \_\_|  |_|\___/  \_/\_/           │
+│                                                      │
+│                Markdown To M-Rows                    │
+│                                                      │
+╰──────────────────────────────────────────────────────╯
+```
+
+The interface provides:
+
+- Colorful output with clear visual hierarchy
+- Progress bars for long operations
+- Well-formatted tables and panels
+- Intuitive help system with examples
+
+## 🏷️ Tag Classification & Gherkin Support
+
+### Automatic Tag Classification
+
+MAMOW automatically classifies Gherkin tags into 5 standardized metadata blocks when converting to/from Markdown:
+
+**Example Gherkin tags:**
+
+```gherkin
+@P1 @Negative @UI @smoke @login @bug-123
+```
+
+**Becomes in Markdown:**
+
+```markdown
+**Priority**: P1
+**TC Type**: Negative
+**Test Type**: smoke
+**Platform Type**: UI
+**Other Tags**: login, bug-123
+```
+
+### Supported Tag Categories
+
+| Category                | Format                     | Example Tags                                           |
+| ----------------------- | -------------------------- | ------------------------------------------------------ |
+| **Priority**      | Uppercase, comma-separated | `P1`, `P2`, `P3`, `P4`, `P5`                 |
+| **TC Type**       | Capitalized                | `Positive`, `Negative`                             |
+| **Test Type**     | Lowercase                  | `smoke`, `regression`, `sanity`, `integration` |
+| **Platform Type** | Uppercase                  | `UI`, `MOBILE`, `API`, `WEB`, `DESKTOP`      |
+| **Other Tags**    | Lowercase                  | `login`, `logout`, `bug-123`, `edge-case`      |
+
+### Gherkin Syntax Support
+
+- **Feature files**: `.feature` extension
+- **Scenario tags**: Tags before each scenario
+- **Feature tags**: Tags at the feature level
+- **Roundtrip preservation**: All tags preserved through conversions
+
+### Sample Gherkin File
+
+```gherkin
+@P1 @smoke @UI
+Feature: Login Module
+  As a user I want to login to the system
+  
+  @Negative @MOBILE
+  Scenario: Invalid login on mobile
+    Given I am on mobile login page
+    When I enter wrong credentials
+    Then error message is displayed
 ```
 
 ## 🛠 Troubleshooting
@@ -224,6 +417,7 @@ If you try to run `mamow` and get an error, ensure you have run the installation
   ```
 
   **Fix 2 (Add to PATH):** Add the folder to your `~/.zshrc` or `~/.bashrc`.
+
   ```bash
   echo 'export PATH="$PATH:'"$(pwd)"'/src/executable_scripts"' >> ~/.zshrc
   source ~/.zshrc

@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from src.core.models import GherkinFeature, GherkinStep
+from src.core.utils.tag_classifier import classify_tags
 
 
 def _steps_to_text(steps: list[GherkinStep]) -> str:
@@ -24,6 +25,32 @@ def _examples_to_table(examples: list[dict[str, str]]) -> str:
 
 
 _KNOWN_META_KEYS = {"tags", "test data", "description", "background"}
+
+
+def _format_tag_values(tags: list[str], category: str) -> str:
+    if not tags:
+        return ""
+    
+    # Clean tags by removing @ prefix
+    clean_tags = [tag.lstrip('@') for tag in tags]
+    
+    # Format based on category requirements
+    if category == "priority":
+        # Uppercase, comma-separated
+        return ', '.join(tag.upper() for tag in clean_tags)
+    elif category == "tc_type":
+        # Capitalized
+        return ', '.join(tag.capitalize() for tag in clean_tags)
+    elif category == "test_type":
+        # Lowercase
+        return ', '.join(tag.lower() for tag in clean_tags)
+    elif category == "platform_type":
+        # Uppercase, comma-separated
+        return ', '.join(tag.upper() for tag in clean_tags)
+    elif category == "other_tags":
+        # Lowercase, comma-separated
+        return ', '.join(tag.lower() for tag in clean_tags)
+    return ""
 
 
 def _classify_steps(steps: list[GherkinStep]) -> tuple[list[GherkinStep], list[GherkinStep], list[GherkinStep]]:
@@ -77,7 +104,22 @@ class MarkdownWriter:
         lines.append(f"# Module: {feature.name}")
 
         if feature.tags:
-            lines.append(f"**Tags**: {' '.join(feature.tags)}")
+            # Classify tags into 5 categories
+            classified = classify_tags(feature.tags)
+            
+            # Define category display names and order
+            categories = [
+                ("priority", "Priority"),
+                ("tc_type", "TC Type"),
+                ("test_type", "Test Type"),
+                ("platform_type", "Platform Type"),
+                ("other_tags", "Other Tags")
+            ]
+            
+            for category_key, display_name in categories:
+                if category_key in classified and classified[category_key]:
+                    formatted_values = _format_tag_values(classified[category_key], category_key)
+                    lines.append(f"**{display_name}**: {formatted_values}")
 
         if feature.description:
             lines.append(f"**Description**: {feature.description}")
@@ -102,7 +144,22 @@ class MarkdownWriter:
                     lines.append(f"**{key}**: {val}")
 
             if scenario.tags:
-                lines.append(f"**Tags**: {' '.join(scenario.tags)}")
+                # Classify tags into 5 categories
+                classified = classify_tags(scenario.tags)
+                
+                # Define category display names and order
+                categories = [
+                    ("priority", "Priority"),
+                    ("tc_type", "TC Type"),
+                    ("test_type", "Test Type"),
+                    ("platform_type", "Platform Type"),
+                    ("other_tags", "Other Tags")
+                ]
+                
+                for category_key, display_name in categories:
+                    if category_key in classified and classified[category_key]:
+                        formatted_values = _format_tag_values(classified[category_key], category_key)
+                        lines.append(f"**{display_name}**: {formatted_values}")
 
             given_steps, when_steps, then_steps = _classify_steps(scenario.steps)
 

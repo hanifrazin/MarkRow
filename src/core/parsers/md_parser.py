@@ -63,13 +63,42 @@ class MarkdownParser:
         feature = GherkinFeature(name=module.name)
         feature.global_metadata = dict(module.global_metadata)
 
-        tags_match = re.search(r'^\*{0,2}Tags\*{0,2}\s*:\s*(.+)$', raw_content, re.MULTILINE | re.IGNORECASE)
-        if tags_match:
-            feature.tags = [t.strip() for t in tags_match.group(1).split() if t.strip()]
+        # Extract feature tags (only from feature section - before first scenario)
+        feature.tags = []
+        
+        # Find feature section (everything before first ## Scenario:)
+        feature_section_match = re.search(r'^(.*?)(?=^## Scenario:)', raw_content, re.MULTILINE | re.DOTALL)
+        feature_section = feature_section_match.group(1) if feature_section_match else raw_content
+        
+        # Define the 5 category patterns to search for in feature section
+        category_patterns = [
+            (r'^\*{2}Priority\*{2}\s*:\s*(.+)$', re.MULTILINE),
+            (r'^\*{2}TC Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+            (r'^\*{2}Test Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+            (r'^\*{2}Platform Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+            (r'^\*{2}Other Tags\*{2}\s*:\s*(.+)$', re.MULTILINE),
+        ]
+        
+        for pattern, flags in category_patterns:
+            match = re.search(pattern, feature_section, flags)
+            if match:
+                values = match.group(1).strip()
+                if values:
+                    # Split by comma and clean up
+                    tag_values = [v.strip() for v in values.split(',') if v.strip()]
+                    # Add @ prefix back to tags
+                    for tag_value in tag_values:
+                        feature.tags.append(f"@{tag_value}")
+        
+        # Also check for old format generic tags for backward compatibility
         if not feature.tags:
-            for key, val in module.global_metadata.items():
-                if key.lower() == "tags":
-                    feature.tags = [t.strip() for t in val.split() if t.strip()]
+            tags_match = re.search(r'^\*{0,2}Tags\*{0,2}\s*:\s*(.+)$', feature_section, re.MULTILINE | re.IGNORECASE)
+            if tags_match:
+                feature.tags = [t.strip() for t in tags_match.group(1).split() if t.strip()]
+            if not feature.tags:
+                for key, val in module.global_metadata.items():
+                    if key.lower() == "tags":
+                        feature.tags = [t.strip() for t in val.split() if t.strip()]
 
         desc_match = re.search(r'^\*{0,2}Description\*{0,2}\s*:\s*(.+)$', raw_content, re.MULTILINE | re.IGNORECASE)
         if desc_match:
@@ -83,9 +112,46 @@ class MarkdownParser:
             scenario = GherkinScenario(name=sc.name)
             scenario.local_metadata = dict(sc.local_metadata)
 
-            tags_val = scenario.local_metadata.pop("Tags", None) or scenario.local_metadata.pop("tags", "")
-            if tags_val:
-                scenario.tags = [t.strip() for t in tags_val.split() if t.strip()]
+            # Initialize empty tags list for scenario
+            scenario.tags = []
+            
+            # Look for the 5 specific metadata blocks in scenario section
+            # We need to find the scenario section in raw content
+            scenario_section = ""
+            lines = raw_content.split('\n')
+            in_scenario = False
+            for line in lines:
+                if re.search(rf'^##\s+Scenario:\s+{re.escape(sc.name)}', line):
+                    in_scenario = True
+                    continue
+                elif in_scenario and line.startswith('##'):
+                    break
+                elif in_scenario:
+                    scenario_section += line + '\n'
+            
+            # Search for the 5 category patterns in scenario section
+            category_patterns = [
+                (r'^\*{2}Priority\*{2}\s*:\s*(.+)$', re.MULTILINE),
+                (r'^\*{2}TC Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+                (r'^\*{2}Test Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+                (r'^\*{2}Platform Type\*{2}\s*:\s*(.+)$', re.MULTILINE),
+                (r'^\*{2}Other Tags\*{2}\s*:\s*(.+)$', re.MULTILINE),
+            ]
+            
+            for pattern, flags in category_patterns:
+                match = re.search(pattern, scenario_section, flags)
+                if match:
+                    values = match.group(1).strip()
+                    if values:
+                        tag_values = [v.strip() for v in values.split(',') if v.strip()]
+                        for tag_value in tag_values:
+                            scenario.tags.append(f"@{tag_value}")
+            
+            # Check for old format tags if none found in new format
+            if not scenario.tags:
+                tags_val = scenario.local_metadata.pop("Tags", None) or scenario.local_metadata.pop("tags", "")
+                if tags_val:
+                    scenario.tags = [t.strip() for t in tags_val.split() if t.strip()]
 
             given_lines = _parse_steps_text(sc.precondition)
             when_lines = _parse_steps_text(sc.test_steps)
